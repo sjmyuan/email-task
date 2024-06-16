@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Email Task</string>
+    <string name="instructions">Instructions</string>
+    <string name="contacts">Contacts</string>
+    <string name="contact_details">Contact Details</string>
+    <string name="group_details">Group Details</string>
+    <string name="edit_group_members">Edit Group Members</string>
+    <string name="edit_schedule_members">Edit Schedule Members</string>
+    <string name="schedule">Schedules</string>
+    <string name="schedule_details">Schedule Details</string>
+    <string name="next">Next</string>
+    <string name="title_content">Instructions</string>
+    <string name="title_people">Contacts</string>
+    <string name="title_schedule">Schedule</string>
+    <string name="title_event">Event</string>
+    <string name="new_contact">New</string>
+    <string name="new_schedule">New</string>
+    <string name="title_group">Groups</string>
+    <string name="groups">Groups</string>
+    <string name="new_group">New</string>
+    <string name="edit_group_member">Edit Members</string>
+</resources>

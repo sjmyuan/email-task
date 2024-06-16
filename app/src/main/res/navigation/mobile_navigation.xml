@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_instructions">
+
+    <fragment
+        android:id="@+id/navigation_instructions"
+        android:name="com.example.emailtask.ui.home.HomeFragment"
+        android:label="@string/instructions"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/navigation_contact_list"
+        android:name="com.example.emailtask.ui.contact.ContactListFragment"
+        android:label="@string/contacts"
+        tools:layout="@layout/fragment_contact_list">
+        <action
+            android:id="@+id/action_to_contact_details"
+            app:destination="@id/navigation_contact_details" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_contact_details"
+        android:name="com.example.emailtask.ui.contact.ContactDetailsFragment"
+        android:label="@string/contact_details"
+        tools:layout="@layout/contact_details" />
+
+    <fragment
+        android:id="@+id/navigation_schedule_list"
+        android:name="com.example.emailtask.ui.schedule.ScheduleListFragment"
+        android:label="@string/schedule"
+        tools:layout="@layout/fragment_schedule_list">
+        <action
+            android:id="@+id/action_to_schedule_details"
+            app:destination="@id/navigation_schedule_details" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_schedule_details"
+        android:name="com.example.emailtask.ui.schedule.ScheduleDetailsFragment"
+        android:label="@string/schedule_details"
+        tools:layout="@layout/schedule_details">
+        <action
+            android:id="@+id/action_from_schedule_details_to_schedule_member_editor"
+            app:destination="@id/navigation_schedule_member_editor" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_schedule_member_editor"
+        android:name="com.example.emailtask.ui.schedule.ScheduleMembersEditorFragment"
+        android:label="@string/edit_schedule_members"
+        tools:layout="@layout/schedule_member_editor" />
+
+    <fragment
+        android:id="@+id/navigation_events"
+        android:name="com.example.emailtask.ui.event.EventListFragment"
+        android:label="@string/next"
+        tools:layout="@layout/fragment_message_list" />
+</navigation>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_instructions"
+        android:icon="@drawable/baseline_announcement_24"
+        android:title="@string/title_content"/>
+
+    <item
+        android:id="@+id/navigation_contact_list"
+        android:icon="@drawable/baseline_account_box_24"
+        android:title="@string/title_people"/>
+
+    <item
+        android:id="@+id/navigation_schedule_list"
+        android:icon="@drawable/baseline_access_time_filled_24"
+        android:title="@string/title_schedule"/>
+    <item
+        android:id="@+id/navigation_events"
+        android:icon="@drawable/baseline_assignment_24"
+        android:title="@string/title_event"/>
+
+</menu>

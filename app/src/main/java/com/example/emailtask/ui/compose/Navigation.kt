@@ -82,9 +82,6 @@ fun BottomNavigation() {
     Scaffold(
         bottomBar = {
             NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
                 navigationItems.forEachIndexed { index, navigationItem ->
                     NavigationBarItem(
                         selected = index == navigationSelectedItem,

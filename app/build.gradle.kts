@@ -28,11 +28,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.1.1"
+    }
     kotlinOptions {
         jvmTarget = "1.8"
     }
     buildFeatures {
         viewBinding = true
+        compose = true
     }
 }
 
@@ -46,7 +50,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.material3.android)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material3)
     implementation(libs.arrow.core)
     implementation(libs.arrow.fx.coroutines)
     implementation(libs.kotlinx.datetime)

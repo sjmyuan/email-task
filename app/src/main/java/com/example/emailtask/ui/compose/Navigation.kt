@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,64 +17,70 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.example.emailtask.R
-import androidx.compose.ui.Modifier
+import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.ui.compose.screens.ContactDetailsScreen
 import com.example.emailtask.ui.compose.screens.ContactsScreen
 import com.example.emailtask.ui.compose.screens.EventsScreen
 import com.example.emailtask.ui.compose.screens.InstructionsScreen
 import com.example.emailtask.ui.compose.screens.SchedulesScreen
 
-enum class Screens(val route: String) {
-    INSTRUCTIONS("instructions"),
+enum class RootScreens(val route: String) {
+    INSTRUCTIONS("instructions_root"),
+    CONTACTS("contacts_root"),
+    SCHEDULES("schedules_root"),
+    EVENTS("events_root")
+}
+
+enum class LeafScreens(val route: String) {
     CONTACTS("contacts"),
-    SCHEDULES("schedules"),
-    EVENTS ("events")
+    CONTACT_DETAILS("contact_details"),
+    SCHEDULE_DETAILS("schedule_details"),
 }
 
 data class BottomNavigationItem(
-    val label : String = "",
-    val icon : ImageVector = Icons.Filled.Home,
-    val route : String = ""
+    val label: String = "",
+    val icon: ImageVector = Icons.Filled.Home,
+    val route: String = ""
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigation() {
-    val navController = rememberNavController()
     val navigationItems = listOf(
         BottomNavigationItem(
             label = "Instructions",
             icon = Icons.Filled.Info,
-            route = Screens.INSTRUCTIONS.route
+            route = RootScreens.INSTRUCTIONS.route
         ),
         BottomNavigationItem(
             label = "Contacts",
             icon = Icons.Filled.AccountCircle,
-            route = Screens.CONTACTS.route
+            route = RootScreens.CONTACTS.route
         ),
         BottomNavigationItem(
             label = "Schedules",
             icon = Icons.Filled.DateRange,
-            route = Screens.SCHEDULES.route
+            route = RootScreens.SCHEDULES.route
         ),
         BottomNavigationItem(
             label = "Events",
             icon = Icons.Filled.MailOutline,
-            route = Screens.EVENTS.route
+            route = RootScreens.EVENTS.route
         ),
     )
 
+    val navController = rememberNavController()
     var navigationSelectedItem by remember {
         mutableIntStateOf(0)
     }
@@ -104,7 +110,8 @@ fun BottomNavigation() {
                                 restoreState = true
                             }
                         }
-                    )                }
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -114,18 +121,29 @@ fun BottomNavigation() {
 
 @Composable
 fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues) {
-    NavHost(navController = navController, startDestination = Screens.INSTRUCTIONS.route,
-        modifier = Modifier.padding(paddingValues = paddingValues)) {
-        composable(Screens.INSTRUCTIONS.route) {
+    val viewModel: App1ViewModel = viewModel()
+    NavHost(
+        navController = navController, startDestination = RootScreens.INSTRUCTIONS.route,
+        modifier = Modifier.padding(paddingValues = paddingValues)
+    ) {
+        composable(RootScreens.INSTRUCTIONS.route) {
             InstructionsScreen()
         }
-        composable(Screens.CONTACTS.route) {
-            ContactsScreen()
+        navigation(
+            route = RootScreens.CONTACTS.route,
+            startDestination = LeafScreens.CONTACTS.route
+        ) {
+            composable(route = LeafScreens.CONTACTS.route) {
+                ContactsScreen(navController, viewModel)
+            }
+            composable(route = LeafScreens.CONTACT_DETAILS.route) {
+                ContactDetailsScreen(navController, viewModel)
+            }
         }
-        composable(Screens.SCHEDULES.route) {
+        composable(RootScreens.SCHEDULES.route) {
             SchedulesScreen()
         }
-        composable(Screens.EVENTS.route) {
+        composable(RootScreens.EVENTS.route) {
             EventsScreen()
         }
     }

@@ -33,6 +33,7 @@ import com.example.emailtask.ui.compose.screens.ContactDetailsScreen
 import com.example.emailtask.ui.compose.screens.ContactsScreen
 import com.example.emailtask.ui.compose.screens.EventsScreen
 import com.example.emailtask.ui.compose.screens.InstructionsScreen
+import com.example.emailtask.ui.compose.screens.ScheduleDetailsScreen
 import com.example.emailtask.ui.compose.screens.SchedulesScreen
 
 enum class RootScreens(val route: String) {
@@ -45,6 +46,7 @@ enum class RootScreens(val route: String) {
 enum class LeafScreens(val route: String) {
     CONTACTS("contacts"),
     CONTACT_DETAILS("contact_details"),
+    SCHEDULES("schedules"),
     SCHEDULE_DETAILS("schedule_details"),
 }
 
@@ -140,8 +142,16 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
                 ContactDetailsScreen(navController, viewModel)
             }
         }
-        composable(RootScreens.SCHEDULES.route) {
-            SchedulesScreen()
+        navigation(
+            route = RootScreens.SCHEDULES.route,
+            startDestination = LeafScreens.SCHEDULES.route
+        ) {
+            composable(route = LeafScreens.SCHEDULES.route) {
+                SchedulesScreen(navController, viewModel)
+            }
+            composable(route = LeafScreens.SCHEDULE_DETAILS.route) {
+                ScheduleDetailsScreen(navController, viewModel)
+            }
         }
         composable(RootScreens.EVENTS.route) {
             EventsScreen()

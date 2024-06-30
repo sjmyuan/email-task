@@ -38,7 +38,7 @@ class App1ViewModel : ViewModel() {
                 listOf(),
                 LocalDateTime(2024, 7, 1, 11, 20, 0),
                 RecurrenceType.NOT_REPEAT,
-                ""
+                "This is a test"
             ), Schedule(
                 2,
                 "pick up child",
@@ -47,7 +47,7 @@ class App1ViewModel : ViewModel() {
                 listOf(),
                 LocalDateTime(2024, 7, 2, 11, 40, 0),
                 RecurrenceType.WEEKLY,
-                ""
+                "This is pick up child"
             )
         )
     )
@@ -87,24 +87,20 @@ class App1ViewModel : ViewModel() {
         }
     }
 
-    // fun saveEditingSchedule() {
-    //     val isNewSchedule = _schedules.value?.find { it.id == _editingSchedule.value?.id } == null
-    //     if (isNewSchedule) {
-    //         val newSchedules =
-    //             _schedules.value?.plus(_editingSchedule.value) ?: listOf(_editingSchedule.value)
-    //         _schedules.value = newSchedules.mapNotNull { it }
-    //     } else {
-    //         // Clear pending event if the schedule was changed
-    //         val newSchedules = _schedules.value?.map {
-    //             if (it.id == _editingSchedule.value?.id) _editingSchedule.value?.copy(
-    //                 pendingEvents = listOf()
-    //             ) else it
-    //         } ?: listOf(
-    //             _editingSchedule.value?.copy(pendingEvents = listOf())
-    //         )
-    //         _schedules.value = newSchedules.mapNotNull { it }
-    //     }
-    // }
+    fun updateSchedule(schedule: Schedule) {
+        _schedules.update { existingSchedules ->
+            val isNewSchedule = existingSchedules.find { it.id == schedule.id } == null
+            if (isNewSchedule) {
+                existingSchedules.plus(schedule)
+            } else {
+                existingSchedules.map {
+                    if (it.id == schedule.id) schedule.copy(
+                        pendingEvents = listOf()
+                    ) else it
+                }
+            }
+        }
+    }
 
     // fun updateScheduleName(name: String) {
     //     _editingSchedule.value?.takeIf { it.name != name }?.copy(name = name)?.let {

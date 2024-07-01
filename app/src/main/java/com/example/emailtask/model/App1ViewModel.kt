@@ -1,9 +1,9 @@
 package com.example.emailtask.model
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,13 +11,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 
 class App1ViewModel : ViewModel() {
 
-    // init {
-    //     startEventLoop()
-    // }
+    init {
+        startEventLoop()
+    }
 
     private val _contacts: MutableStateFlow<List<Contact>> = MutableStateFlow(
         listOf(
@@ -102,51 +111,6 @@ class App1ViewModel : ViewModel() {
         }
     }
 
-    // fun updateScheduleName(name: String) {
-    //     _editingSchedule.value?.takeIf { it.name != name }?.copy(name = name)?.let {
-    //         _editingSchedule.value = it
-    //     }
-    // }
-
-    // fun updateScheduleMessage(message: String) {
-    //     _editingSchedule.value?.takeIf { it.message != message }?.copy(message = message)?.let {
-    //         _editingSchedule.value = it
-    //     }
-    // }
-
-    // fun updateScheduleSentTime(sentTime: LocalDateTime) {
-    //     _editingSchedule.value?.takeIf { it.sentTime != sentTime }?.copy(sentTime = sentTime)?.let {
-    //         _editingSchedule.value = it
-    //     }
-    // }
-
-    // fun updateScheduleDate(date: LocalDate) {
-    //     _editingSchedule.value?.takeIf { it.sentTime.date != date }?.let {
-    //         val updatedSentTime = LocalDateTime(date, it.sentTime.time)
-    //         _editingSchedule.value = it.copy(sentTime = updatedSentTime)
-    //     }
-    // }
-
-    // fun updateScheduleTime(time: LocalTime) {
-    //     _editingSchedule.value?.takeIf { it.sentTime.time != time }?.let {
-    //         val updatedSentTime = LocalDateTime(it.sentTime.date, time)
-    //         _editingSchedule.value = it.copy(sentTime = updatedSentTime)
-    //     }
-    // }
-
-    // fun updateScheduleRecurrence(recurrence: RecurrenceType) {
-    //     _editingSchedule.value?.takeIf { it.recurrence != recurrence }
-    //         ?.copy(recurrence = recurrence)?.let {
-    //             _editingSchedule.value = it
-    //         }
-    // }
-
-    // fun updateScheduleReceivers(receivers: List<Long>) {
-    //     _editingSchedule.value?.takeIf { it.receivers != receivers }?.copy(receivers = receivers)
-    //         ?.let {
-    //             _editingSchedule.value = it
-    //         }
-    // }
 
     // fun moveScheduleMember(from: Int, to: Int) {
     //     _editingSchedule.value?.let {
@@ -157,143 +121,141 @@ class App1ViewModel : ViewModel() {
     //     }
     // }
 
-    // fun moveContact(from: Int, to: Int) {
 
-    // }
+    private fun startEventLoop() {
+        viewModelScope.launch {
+            while (isActive) {
+                generateEvents()
+                delay(1 * 60 * 1000)
+            }
+        }
+    }
 
-    // private fun startEventLoop() {
-    //     viewModelScope.launch {
-    //         while (isActive) {
-    //             generateEvents()
-    //             delay(1 * 60 * 1000)
-    //         }
-    //     }
-    // }
+    private suspend fun generateEvents() {
+        withContext(Dispatchers.Default) {
+            val currentMoment: Instant = Clock.System.now()
+            val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 
-    // private suspend fun generateEvents() {
-    //     withContext(Dispatchers.Default) {
-    //         val currentMoment: Instant = Clock.System.now()
-    //         val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
+            //TODO consider update pending message dynamically, which mean regenerate it according to the latest schedule
+            _schedules.update { existingSchedules ->
+               existingSchedules.map {
+                   when (it.recurrence) {
+                       RecurrenceType.NOT_REPEAT -> {
+                           if (it.sentEvents.isEmpty() && it.pendingEvents.isEmpty() && it.sentTime > now) {
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   it.sentTime
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
 
-    //         //TODO consider update pending message dynamically, which mean regenerate it according to the latest schedule
-    //         _schedules.value?.map {
-    //             when (it.recurrence) {
-    //                 RecurrenceType.NOT_REPEAT -> {
-    //                     if (it.sentEvents.isEmpty() && it.pendingEvents.isEmpty() && it.sentTime > now) {
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             it.sentTime
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
+                       RecurrenceType.DAILY -> {
+                           if (it.pendingEvents.none { event -> event.sentTime >= now }) {
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   if (it.sentTime > now) it.sentTime else LocalDateTime(
+                                       now.date.plus(
+                                           DatePeriod(0, 0, 1)
+                                       ), it.sentTime.time
+                                   )
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
 
-    //                 RecurrenceType.DAILY -> {
-    //                     if (it.pendingEvents.none { event -> event.sentTime >= now }) {
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             if (it.sentTime > now) it.sentTime else LocalDateTime(
-    //                                 now.date.plus(
-    //                                     DatePeriod(0, 0, 1)
-    //                                 ), it.sentTime.time
-    //                             )
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
+                       RecurrenceType.WEEKLY -> {
+                           if (it.pendingEvents.none { event -> event.sentTime >= now }) {
+                               val offset = it.sentTime.dayOfWeek.ordinal - now.date.dayOfWeek.ordinal
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   if (it.sentTime > now) it.sentTime else LocalDateTime(
+                                       now.date.plus(DatePeriod(0, 0, 7 + offset)), it.sentTime.time
+                                   )
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
 
-    //                 RecurrenceType.WEEKLY -> {
-    //                     if (it.pendingEvents.none { event -> event.sentTime >= now }) {
-    //                         val offset = it.sentTime.dayOfWeek.ordinal - now.date.dayOfWeek.ordinal
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             if (it.sentTime > now) it.sentTime else LocalDateTime(
-    //                                 now.date.plus(DatePeriod(0, 0, 7 + offset)), it.sentTime.time
-    //                             )
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
+                       RecurrenceType.MONTHLY -> {
+                           if (it.pendingEvents.none { event -> event.sentTime >= now }) {
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   if (it.sentTime > now) it.sentTime else LocalDateTime(
+                                       now.date.plus(DatePeriod(0, 1, 0)), it.sentTime.time
+                                   )
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
 
-    //                 RecurrenceType.MONTHLY -> {
-    //                     if (it.pendingEvents.none { event -> event.sentTime >= now }) {
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             if (it.sentTime > now) it.sentTime else LocalDateTime(
-    //                                 now.date.plus(DatePeriod(0, 1, 0)), it.sentTime.time
-    //                             )
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
+                       RecurrenceType.Annually -> {
+                           if (it.pendingEvents.none { event -> event.sentTime >= now }) {
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   if (it.sentTime > now) it.sentTime else LocalDateTime(
+                                       now.date.plus(DatePeriod(1, 0, 0)), it.sentTime.time
+                                   )
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
 
-    //                 RecurrenceType.Annually -> {
-    //                     if (it.pendingEvents.none { event -> event.sentTime >= now }) {
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             if (it.sentTime > now) it.sentTime else LocalDateTime(
-    //                                 now.date.plus(DatePeriod(1, 0, 0)), it.sentTime.time
-    //                             )
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
+                       RecurrenceType.WEEKDAY -> {
+                           if (it.pendingEvents.none { event -> event.sentTime >= now }) {
 
-    //                 RecurrenceType.WEEKDAY -> {
-    //                     if (it.pendingEvents.none { event -> event.sentTime >= now }) {
+                               val nextDate = when (now.date.dayOfWeek.ordinal) {
+                                   4 -> {
+                                       now.date.plus(DatePeriod(0, 0, 3))
+                                   }
 
-    //                         val nextDate = when (now.date.dayOfWeek.ordinal) {
-    //                             4 -> {
-    //                                 now.date.plus(DatePeriod(0, 0, 3))
-    //                             }
+                                   5 -> {
+                                       now.date.plus(DatePeriod(0, 0, 2))
+                                   }
 
-    //                             5 -> {
-    //                                 now.date.plus(DatePeriod(0, 0, 2))
-    //                             }
+                                   else -> {
+                                       now.date.plus(DatePeriod(0, 0, 1))
+                                   }
+                               }
 
-    //                             else -> {
-    //                                 now.date.plus(DatePeriod(0, 0, 1))
-    //                             }
-    //                         }
+                               val event = Event(
+                                   System.currentTimeMillis(),
+                                   it.receivers.first(),
+                                   it.message,
+                                   if (it.sentTime > now) it.sentTime else LocalDateTime(
+                                       nextDate, it.sentTime.time
+                                   )
+                               )
+                               it.copy(pendingEvents = listOf(event))
+                           } else {
+                               it
+                           }
+                       }
+                   }
+               }
+            }
+        }
 
-    //                         val event = Event(
-    //                             System.currentTimeMillis(),
-    //                             it.receivers.first(),
-    //                             it.message,
-    //                             if (it.sentTime > now) it.sentTime else LocalDateTime(
-    //                                 nextDate, it.sentTime.time
-    //                             )
-    //                         )
-    //                         it.copy(pendingEvents = listOf(event))
-    //                     } else {
-    //                         it
-    //                     }
-    //                 }
-    //             }
-    //         }?.let { _schedules.postValue(it) }
-
-    //     }
-
-    // }
+    }
 
 }

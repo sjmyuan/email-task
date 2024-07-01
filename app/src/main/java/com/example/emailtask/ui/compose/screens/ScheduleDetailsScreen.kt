@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -51,7 +53,10 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.Contact
 import com.example.emailtask.model.RecurrenceType
+import com.example.emailtask.ui.compose.LeafScreens
+import com.example.emailtask.ui.compose.utils.ScheduleReceiversDialog
 import com.example.emailtask.ui.compose.utils.TimePickerDialog
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -70,9 +75,6 @@ fun ScheduleDetailsScreen(
 ) {
     val editingSchedule by viewModel.editingSchedule.collectAsState()
     val contacts by viewModel.contacts.collectAsState()
-    val receivers =
-        editingSchedule?.receivers?.mapNotNull { contacts.find { contact -> contact.id == it } }
-            ?: listOf()
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = editingSchedule?.sentTime?.toInstant(TimeZone.currentSystemDefault())
@@ -91,6 +93,14 @@ fun ScheduleDetailsScreen(
     val selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
 
     var showRecurrenceTypeList by remember { mutableStateOf(false) }
+
+    var showReceiversEditor by remember { mutableStateOf(false) }
+    var receivers by remember {
+        mutableStateOf(
+            editingSchedule?.receivers?.mapNotNull { contacts.find { contact -> contact.id == it } }
+                ?: listOf()
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -220,6 +230,7 @@ fun ScheduleDetailsScreen(
                         .fillMaxWidth()
                         .padding(4.dp),
                     onClick = {
+                        showReceiversEditor = true
                     },
                 ) {
                     Icon(Icons.Filled.Edit, "Edit Schedule Receivers")
@@ -287,70 +298,67 @@ fun ScheduleDetailsScreen(
         }
     }
 
-}
-
-@Composable
-fun DropdownList(
-    itemList: List<String>,
-    selectedIndex: Int,
-    modifier: Modifier,
-    onItemClick: (Int) -> Unit
-) {
-
-    var showDropdown by rememberSaveable { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
-
-    Column(
-        modifier = Modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Box(
-            modifier = modifier
-                .clickable { showDropdown = true },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = itemList[selectedIndex], modifier = Modifier.padding(3.dp))
-        }
-
-        Box() {
-            if (showDropdown) {
-                Popup(
-                    alignment = Alignment.TopCenter,
-                    properties = PopupProperties(
-                        excludeFromSystemGesture = true,
-                    ),
-                    onDismissRequest = { showDropdown = false }
-                ) {
-                    Column(
-                        modifier = modifier
-                            .heightIn(max = 90.dp)
-                            .verticalScroll(state = scrollState)
-                            .border(width = 1.dp, color = Color.Gray),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-
-                        itemList.onEachIndexed { index, item ->
-                            if (index != 0) {
-                                HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onItemClick(index)
-                                        showDropdown = !showDropdown
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = item)
-                            }
-                        }
+    if (showReceiversEditor) {
+        ScheduleReceiversDialog(
+            onDismissRequest = { /*TODO*/ },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReceiversEditor = false
+                        viewModel.setEditingSchedule(
+                            editingSchedule
+                                ?.copy(receivers = receivers.map { it.id })
+                        )
                     }
-                }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showReceiversEditor = false
+                        receivers =
+                            editingSchedule?.receivers?.mapNotNull { contacts.find { contact -> contact.id == it } }
+                                ?: listOf()
+                    }
+                ) { Text("Cancel") }
+            }
+        )
+        {
+            ReceiverPicker(
+                Modifier.width(256.dp),
+                contacts,
+                receivers
+            ) { checked, receiver ->
+                receivers = if (checked) receivers + receiver
+                else receivers.filterNot { it.id == receiver.id }
             }
         }
     }
 
+}
+
+@Composable
+fun ReceiverPicker(
+    modifier: Modifier,
+    contacts: List<Contact>,
+    receivers: List<Contact>,
+    oncChange: (checked: Boolean, receiver: Contact) -> Unit
+) {
+    Column(modifier = modifier) {
+        contacts.map { item ->
+            ContactPickerItem(name = item.name,
+                receivers.find { it.id == item.id } != null,
+                onCheck = { checked ->
+                    oncChange(checked, item)
+                })
+        }
+    }
+}
+
+@Composable
+fun ContactPickerItem(name: String, checked: Boolean, onCheck: (check: Boolean) -> Unit) {
+    ListItem(
+        headlineContent = { Text(name) },
+        trailingContent = { Checkbox(checked = checked, onCheckedChange = onCheck) }
+    )
 }

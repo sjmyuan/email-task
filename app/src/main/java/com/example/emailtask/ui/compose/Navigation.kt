@@ -47,7 +47,7 @@ enum class LeafScreens(val route: String) {
     CONTACTS("contacts"),
     CONTACT_DETAILS("contact_details"),
     SCHEDULES("schedules"),
-    SCHEDULE_DETAILS("schedule_details"),
+    SCHEDULE_DETAILS("schedule_details")
 }
 
 data class BottomNavigationItem(
@@ -154,7 +154,7 @@ fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues
             }
         }
         composable(RootScreens.EVENTS.route) {
-            EventsScreen()
+            EventsScreen(viewModel)
         }
     }
 }

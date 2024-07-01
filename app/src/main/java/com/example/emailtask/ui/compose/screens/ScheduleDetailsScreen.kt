@@ -139,19 +139,7 @@ fun ScheduleDetailsScreen(
             )
             OutlinedTextField(
                 selectedDate?.format(LocalDate.Formats.ISO).orEmpty(),
-                { value ->
-                    editingSchedule?.sentTime?.time?.let {
-                        val date = LocalDate.Formats.ISO.parse(value)
-                        viewModel.setEditingSchedule(
-                            editingSchedule?.copy(
-                                sentTime = LocalDateTime(
-                                    date,
-                                    it
-                                )
-                            )
-                        )
-                    }
-                },
+                { },
                 label = { Text(text = "Date") },
                 readOnly = true,
                 enabled = false,
@@ -164,19 +152,7 @@ fun ScheduleDetailsScreen(
 
             OutlinedTextField(
                 selectedTime.format(LocalTime.Formats.ISO),
-                { value ->
-                    editingSchedule?.sentTime?.date?.let {
-                        val time = LocalTime.Formats.ISO.parse(value)
-                        viewModel.setEditingSchedule(
-                            editingSchedule?.copy(
-                                sentTime = LocalDateTime(
-                                    it,
-                                    time
-                                )
-                            )
-                        )
-                    }
-                },
+                { },
                 label = { Text(text = "Time") },
                 readOnly = true,
                 enabled = false,
@@ -245,7 +221,11 @@ fun ScheduleDetailsScreen(
                 } == true,
                 onClick = {
                     editingSchedule?.let { schedule ->
-                        viewModel.updateSchedule(schedule)
+                        viewModel.updateSchedule(
+                            selectedDate?.let {
+                                schedule.copy(sentTime = LocalDateTime(it, selectedTime))
+                            } ?: schedule
+                        )
                     }
                     navController.popBackStack()
                 }, content = { Text("Save") })

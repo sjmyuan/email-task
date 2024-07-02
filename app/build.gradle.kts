@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.arrow.fx.coroutines)
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.room.room.runtime)
+    annotationProcessor(libs.androidx.room.room.compiler2)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

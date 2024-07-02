@@ -33,16 +33,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true, apiLevel = 24)
-@Composable
-fun DefaultPreview() {
-    EmailTaskTheme{
-        Greeting("Android")
-    }
-}

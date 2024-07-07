@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 interface ScheduleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -19,6 +20,6 @@ interface ScheduleDao {
 
     @Transaction
     @Query("SELECT * FROM schedule")
-    suspend fun getAll(): List<ScheduleWithReceiversAndEvents>
+    fun getAll(): Flow<List<ScheduleWithReceiversAndEvents>>
 
 }

@@ -12,6 +12,9 @@ data class ContactEntity(
     val email: String,
 ) {
     fun toContact() = Contact(contactId, name, mobile, email)
-    fun fromContact(contact: Contact) =
-        ContactEntity(contact.id, contact.name, contact.mobile, contact.email)
+
+    companion object {
+        fun fromContact(contact: Contact) =
+            ContactEntity(contact.id, contact.name, contact.mobile, contact.email)
+    }
 }

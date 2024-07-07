@@ -5,16 +5,17 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.example.emailtask.model.Event
+import com.example.emailtask.model.Status
 import kotlinx.datetime.LocalDateTime
 
 @Entity(tableName = "event")
 data class EventEntity(
     @PrimaryKey val eventId: Long,
     val scheduleId: Long,
-    val receiverId: String,
+    val receiverId: Long,
     val message: String,
     val sentTime: String,
-    val status: String
+    val status: Int
 )
 
 data class EventWithReceiver(
@@ -28,11 +29,10 @@ data class EventWithReceiver(
 ) {
     fun toEvent() =
         Event(
-            event.eventId, receiver.toContact(),
-            LocalDateTime.parse(event.sentTime, LocalDateTime.Formats.ISO),
+            event.eventId,
+            receiver.toContact(),
             event.message,
-            event.status
+            LocalDateTime.parse(event.sentTime, LocalDateTime.Formats.ISO),
+            Status.entries[event.status]
         )
-
-    //TODO from event
 }

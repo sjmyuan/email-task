@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.example.emailtask.model.Contact
 import com.example.emailtask.model.Event
 import com.example.emailtask.model.RecurrenceType
 import com.example.emailtask.model.Schedule
@@ -43,12 +42,34 @@ data class ScheduleWithReceiversAndEvents(
 ) {
     fun toSchedule() = Schedule(
         schedule.scheduleId,
+        schedule.name,
         receivers.map { it.toContact() },
         events.map { it.toEvent() },
         LocalDateTime.parse(schedule.sentTime, LocalDateTime.Formats.ISO),
-        RecurrenceType.values[schedule.recurrence],
+        RecurrenceType.entries[schedule.recurrence],
         schedule.message
     )
 
-    //TODO from schedule
+    companion object {
+        fun fromSchedule(source: Schedule) =
+            ScheduleEntity(
+                source.id,
+                source.name,
+                LocalDateTime.Formats.ISO.format(source.sentTime),
+                source.recurrence.ordinal,
+                source.message
+            )
+
+
+        fun toEventEntity(source: Schedule, event: Event) = EventEntity(
+            event.id,
+            source.id,
+            event.receiver.id,
+            event.message,
+            LocalDateTime.Formats.ISO.format(event.sentTime),
+            event.status.ordinal
+        )
+
+    }
+
 }

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventDao {
@@ -19,8 +20,8 @@ interface EventDao {
     suspend fun deleteEvents(vararg events: EventEntity)
 
     @Query("SELECT * FROM event")
-    suspend fun getAll(): List<EventWithReceiver>
+    suspend fun getAll(): Flow<List<EventWithReceiver>>
 
     @Query("SELECT * FROM event where status == 'pending'")
-    suspend fun getAllPendingEvents(): List<EventWithReceiver>
+    suspend fun getAllPendingEvents(): Flow<List<EventWithReceiver>>
 }

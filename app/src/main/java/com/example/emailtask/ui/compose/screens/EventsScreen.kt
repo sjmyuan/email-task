@@ -22,12 +22,11 @@ import kotlinx.datetime.format
 @Composable
 fun EventsScreen(viewModel: App1ViewModel = viewModel()) {
     val schedules by viewModel.schedules.collectAsState()
-    val contacts by viewModel.contacts.collectAsState()
     val events = schedules.flatMap { schedule ->
-        schedule.pendingEvents.map { event ->
+        schedule.events.map { event ->
             Triple(
                 schedule.name,
-                contacts.find { it.id == event.receiver }?.name,
+                event.receiver.name,
                 event
             )
         }

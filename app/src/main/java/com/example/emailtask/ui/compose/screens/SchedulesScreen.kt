@@ -53,7 +53,6 @@ fun SchedulesScreen(navController: NavHostController, viewModel: App1ViewModel =
                         "",
                         listOf(),
                         listOf(),
-                        listOf(),
                         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
                         RecurrenceType.NOT_REPEAT,
                         ""

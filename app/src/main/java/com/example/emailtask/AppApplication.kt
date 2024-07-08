@@ -11,5 +11,10 @@ class AppApplication : Application() {
     val applicationScope = CoroutineScope(SupervisorJob())
     val appDatabase by lazy { AppDatabase.getDatabase(this, applicationScope) }
     val contactRepository by lazy { ContactRepository(appDatabase.contactDao()) }
-    val scheduleRepository by lazy { ScheduleRepository(appDatabase.scheduleDao()) }
+    val scheduleRepository by lazy {
+        ScheduleRepository(
+            appDatabase.scheduleDao(),
+            appDatabase.eventDao()
+        )
+    }
 }

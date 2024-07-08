@@ -97,8 +97,7 @@ fun ScheduleDetailsScreen(
     var showReceiversEditor by remember { mutableStateOf(false) }
     var receivers by remember {
         mutableStateOf(
-            editingSchedule?.receivers?.mapNotNull { contacts.find { contact -> contact.id == it } }
-                ?: listOf()
+            editingSchedule?.receivers ?: listOf()
         )
     }
 
@@ -287,7 +286,7 @@ fun ScheduleDetailsScreen(
                         showReceiversEditor = false
                         viewModel.setEditingSchedule(
                             editingSchedule
-                                ?.copy(receivers = receivers.map { it.id })
+                                ?.copy(receivers = receivers)
                         )
                     }
                 ) { Text("OK") }
@@ -297,8 +296,7 @@ fun ScheduleDetailsScreen(
                     onClick = {
                         showReceiversEditor = false
                         receivers =
-                            editingSchedule?.receivers?.mapNotNull { contacts.find { contact -> contact.id == it } }
-                                ?: listOf()
+                            editingSchedule?.receivers ?: listOf()
                     }
                 ) { Text("Cancel") }
             }

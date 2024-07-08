@@ -28,7 +28,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.example.emailtask.AppApplication
 import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.App1ViewModelFactory
 import com.example.emailtask.ui.compose.screens.ContactDetailsScreen
 import com.example.emailtask.ui.compose.screens.ContactsScreen
 import com.example.emailtask.ui.compose.screens.EventsScreen
@@ -58,7 +60,7 @@ data class BottomNavigationItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigation() {
+fun BottomNavigation(viewModel: App1ViewModel) {
     val navigationItems = listOf(
         BottomNavigationItem(
             label = "Instructions",
@@ -117,13 +119,20 @@ fun BottomNavigation() {
             }
         }
     ) { paddingValues ->
-        AppNavigation(navController = navController, paddingValues = paddingValues)
+        AppNavigation(
+            navController = navController,
+            paddingValues = paddingValues,
+            viewModel = viewModel
+        )
     }
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController, paddingValues: PaddingValues) {
-    val viewModel: App1ViewModel = viewModel()
+fun AppNavigation(
+    navController: NavHostController,
+    paddingValues: PaddingValues,
+    viewModel: App1ViewModel
+) {
     NavHost(
         navController = navController, startDestination = RootScreens.INSTRUCTIONS.route,
         modifier = Modifier.padding(paddingValues = paddingValues)

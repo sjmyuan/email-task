@@ -9,7 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [ContactEntity::class, EventEntity::class, ScheduleEntity::class],
+    entities = [ContactEntity::class, EventEntity::class,
+        ScheduleEntity::class, ScheduleContactCrossRef::class],
     version = 1
 )
 abstract class AppDatabase : RoomDatabase() {

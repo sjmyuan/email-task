@@ -2,6 +2,7 @@ package com.example.emailtask.repository
 
 import androidx.annotation.WorkerThread
 import com.example.emailtask.data.EventDao
+import com.example.emailtask.data.EventEntity
 import com.example.emailtask.data.ScheduleDao
 import com.example.emailtask.data.ScheduleWithReceiversAndEvents
 import com.example.emailtask.model.Event
@@ -20,7 +21,7 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
     }
 
     @WorkerThread
-    suspend fun insertEvent(schedule: Schedule, event: Event) {
-        eventDao.insertEvents(ScheduleWithReceiversAndEvents.toEventEntity(schedule, event))
+    suspend fun insertEvent(event: Event) {
+        eventDao.insertEvents(EventEntity.fromEvent(event))
     }
 }

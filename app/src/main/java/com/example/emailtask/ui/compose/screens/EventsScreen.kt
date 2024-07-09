@@ -24,9 +24,8 @@ fun EventsScreen(viewModel: App1ViewModel = viewModel()) {
     val schedules by viewModel.schedules.collectAsState()
     val events = schedules.flatMap { schedule ->
         schedule.events.map { event ->
-            Triple(
+            Pair(
                 schedule.name,
-                event.receiver.name,
                 event
             )
         }
@@ -42,11 +41,11 @@ fun EventsScreen(viewModel: App1ViewModel = viewModel()) {
 }
 
 @Composable
-fun EventItem(event: Triple<String, String?, Event>) {
+fun EventItem(event: Pair<String, Event>) {
     ListItem(
         overlineContent = { Text(event.first) },
-        headlineContent = { Text(event.third.message) },
-        supportingContent = { Text(event.second.orEmpty()) },
-        trailingContent = { Text(event.third.sentTime.format(LocalDateTime.Formats.ISO)) }
+        headlineContent = { Text(event.second.message) },
+        supportingContent = { Text(event.second.receiverName) },
+        trailingContent = { Text(event.second.sentTime.format(LocalDateTime.Formats.ISO)) }
     )
 }

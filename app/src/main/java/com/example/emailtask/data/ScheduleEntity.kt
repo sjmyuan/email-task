@@ -38,7 +38,7 @@ data class ScheduleWithReceiversAndEvents(
         parentColumn = "scheduleId",
         entityColumn = "scheduleId"
     )
-    val events: List<EventWithReceiver>
+    val events: List<EventEntity>
 ) {
     fun toSchedule() = Schedule(
         schedule.scheduleId,
@@ -59,17 +59,6 @@ data class ScheduleWithReceiversAndEvents(
                 source.recurrence.ordinal,
                 source.message
             )
-
-
-        fun toEventEntity(source: Schedule, event: Event) = EventEntity(
-            event.id,
-            source.id,
-            event.receiver.id,
-            event.message,
-            LocalDateTime.Formats.ISO.format(event.sentTime),
-            event.status.ordinal
-        )
-
     }
 
 }

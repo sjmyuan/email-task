@@ -13,26 +13,36 @@ data class EventEntity(
     @PrimaryKey val eventId: Long,
     val scheduleId: Long,
     val receiverId: Long,
+    val receiverName: String,
+    val receiverEmail: String,
+    val receiverMobile: String,
     val message: String,
     val sentTime: String,
     val status: Int
-)
-
-data class EventWithReceiver(
-    @Embedded val event: EventEntity,
-
-    @Relation(
-        parentColumn = "receiverId",
-        entityColumn = "contactId"
-    )
-    val receiver: ContactEntity
 ) {
-    fun toEvent() =
-        Event(
-            event.eventId,
-            receiver.toContact(),
+    fun toEvent() = Event(
+        this.eventId,
+        this.scheduleId,
+        this.receiverId,
+        this.receiverName,
+        this.receiverEmail,
+        this.receiverMobile,
+        this.message,
+        LocalDateTime.parse(this.sentTime, LocalDateTime.Formats.ISO),
+        Status.entries[this.status]
+    )
+
+    companion object {
+        fun fromEvent(event: Event) = EventEntity(
+            event.id,
+            event.scheduleId,
+            event.receiverId,
+            event.receiverName,
+            event.receiverEmail,
+            event.receiverMobile,
             event.message,
-            LocalDateTime.parse(event.sentTime, LocalDateTime.Formats.ISO),
-            Status.entries[event.status]
+            LocalDateTime.Formats.ISO.format(event.sentTime),
+            event.status.ordinal
         )
+    }
 }

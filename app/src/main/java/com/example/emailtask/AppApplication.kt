@@ -8,8 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
 class AppApplication : Application() {
-    val applicationScope = CoroutineScope(SupervisorJob())
-    val appDatabase by lazy { AppDatabase.getDatabase(this, applicationScope) }
+    private val applicationScope = CoroutineScope(SupervisorJob())
+    private val appDatabase by lazy { AppDatabase.getDatabase(this, applicationScope) }
     val contactRepository by lazy { ContactRepository(appDatabase.contactDao()) }
     val scheduleRepository by lazy {
         ScheduleRepository(

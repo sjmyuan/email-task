@@ -59,6 +59,13 @@ data class ScheduleWithReceiversAndEvents(
                 source.recurrence.ordinal,
                 source.message
             )
+
+        fun fromSchedule1(source: Schedule) =
+            ScheduleWithReceiversAndEvents(
+                schedule = fromSchedule(source),
+                receivers = source.receivers.map { ContactEntity.fromContact(it) },
+                events = source.events.map { EventEntity.fromEvent(it) }
+            )
     }
 
 }

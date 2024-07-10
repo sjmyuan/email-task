@@ -20,6 +20,9 @@ interface EventDao {
     @Delete
     suspend fun deleteEvents(vararg events: EventEntity)
 
+    @Query("DELETE FROM event where scheduleId = :scheduleId")
+    suspend fun deleteEventsByScheduleId(scheduleId: Long)
+
     @Query("SELECT * FROM event")
     fun getAll(): Flow<List<EventEntity>>
 

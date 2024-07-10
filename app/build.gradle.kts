@@ -69,4 +69,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     kapt(libs.androidx.room.room.compiler2)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

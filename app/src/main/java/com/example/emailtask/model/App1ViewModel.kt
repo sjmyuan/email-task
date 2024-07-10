@@ -37,39 +37,6 @@ class App1ViewModel(
         //startEventLoop()
     }
 
-    //private val _contacts: MutableStateFlow<List<Contact>> = MutableStateFlow(
-    //    listOf(
-    //        Contact(1, "Tod1", "1234567890", "john@example.com"),
-    //        Contact(2, "Tod2", "1234567890", "john@example.com"),
-    //        Contact(3, "Tod3", "1234567890", "john@example.com"),
-    //        Contact(4, "Tod4", "1234567890", "john@example.com"),
-    //        Contact(5, "Tod5", "1234567890", "john@example.com"),
-    //    )
-    //)
-    //private val _schedules: MutableStateFlow<List<Schedule>> = MutableStateFlow(
-    //    listOf(
-    //        Schedule(
-    //            1,
-    //            "test",
-    //            listOf(1),
-    //            listOf(),
-    //            listOf(),
-    //            LocalDateTime(2024, 7, 1, 11, 20, 0),
-    //            RecurrenceType.NOT_REPEAT,
-    //            "This is a test"
-    //        ), Schedule(
-    //            2,
-    //            "pick up child",
-    //            listOf(2, 3),
-    //            listOf(),
-    //            listOf(),
-    //            LocalDateTime(2024, 7, 2, 11, 40, 0),
-    //            RecurrenceType.WEEKLY,
-    //            "This is pick up child"
-    //        )
-    //    )
-    //)
-
     private val _editingContact: MutableStateFlow<Contact?> = MutableStateFlow(null)
     private val _editingSchedule: MutableStateFlow<Schedule?> = MutableStateFlow(null)
 
@@ -93,33 +60,12 @@ class App1ViewModel(
         viewModelScope.launch {
             contactRepository.insert(contact)
         }
-        //_contacts.update { existingContacts ->
-        //    val isNewContact = existingContacts.find { it.id == contact.id } == null
-        //    if (isNewContact) {
-        //        contacts.value.plus(contact)
-        //    } else {
-        //        existingContacts.map { if (it.id == contact.id) contact else it }
-        //    }
-        //}
     }
 
     fun updateSchedule(schedule: Schedule) {
         viewModelScope.launch {
             scheduleRepository.insertSchedule(schedule)
         }
-
-        //_schedules.update { existingSchedules ->
-        //    val isNewSchedule = existingSchedules.find { it.id == schedule.id } == null
-        //    if (isNewSchedule) {
-        //        existingSchedules.plus(schedule)
-        //    } else {
-        //        existingSchedules.map {
-        //            if (it.id == schedule.id) schedule.copy(
-        //                pendingEvents = listOf()
-        //            ) else it
-        //        }
-        //    }
-        //}
     }
 
 

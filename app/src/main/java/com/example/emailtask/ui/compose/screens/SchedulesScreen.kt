@@ -58,7 +58,7 @@ fun SchedulesScreen(navController: NavHostController, viewModel: App1ViewModel =
                         ""
                     )
                 )
-                navController.navigate(LeafScreens.CONTACT_DETAILS.route)
+                navController.navigate(LeafScreens.SCHEDULE_DETAILS.route)
             },
         ) {
             Icon(Icons.Filled.Add, "Add New Schedule")

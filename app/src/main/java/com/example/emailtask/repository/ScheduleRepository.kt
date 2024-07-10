@@ -1,8 +1,10 @@
 package com.example.emailtask.repository
 
 import androidx.annotation.WorkerThread
+import androidx.room.Transaction
 import com.example.emailtask.data.EventDao
 import com.example.emailtask.data.EventEntity
+import com.example.emailtask.data.ScheduleContactCrossRef
 import com.example.emailtask.data.ScheduleDao
 import com.example.emailtask.data.ScheduleWithReceiversAndEvents
 import com.example.emailtask.model.Event
@@ -16,8 +18,19 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
         scheduleDao.getAll().map { scheduleEntities -> scheduleEntities.map { it.toSchedule() } }
 
     @WorkerThread
+    @Transaction
     suspend fun insertSchedule(schedule: Schedule) {
-        scheduleDao.insertSchedules(ScheduleWithReceiversAndEvents.fromSchedule(schedule))
+        val entity = ScheduleWithReceiversAndEvents.fromSchedule1(schedule)
+        scheduleDao.insertSchedules(entity.schedule)
+        scheduleDao.deleteScheduleReceivers(scheduleId = entity.schedule.scheduleId)
+        scheduleDao.insertScheduleReceivers(*entity.receivers.map {
+            ScheduleContactCrossRef(
+                entity.schedule.scheduleId,
+                it.contactId
+            )
+        }.toTypedArray())
+        eventDao.deleteEventsByScheduleId(entity.schedule.scheduleId)
+        eventDao.insertEvents(*entity.events.toTypedArray())
     }
 
     @WorkerThread

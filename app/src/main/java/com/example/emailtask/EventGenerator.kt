@@ -27,7 +27,8 @@ class EventGenerator(
     override suspend fun doWork(): Result {
         val currentMoment: Instant = Clock.System.now()
         val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
-        withContext(Dispatchers.IO) {
+
+        return withContext(Dispatchers.IO) {
             scheduleRepository.allSchedules.collect { schedules ->
                 schedules.filter { it.receivers.isNotEmpty() }
                     .forEach {
@@ -170,7 +171,7 @@ class EventGenerator(
                         }
                     }
             }
+            return@withContext Result.success()
         }
-        return Result.success()
     }
 }

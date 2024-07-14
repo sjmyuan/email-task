@@ -16,6 +16,11 @@ class AppWorkerFactory(private val repository: ScheduleRepository) : WorkerFacto
         if (workerClassName == EventGenerator::class.java.name) {
             return EventGenerator(appContext, workerParameters, repository)
         }
+
+        if (workerClassName == EventSender::class.java.name) {
+            return EventSender(appContext, workerParameters, repository)
+        }
+
         return null
     }
 }

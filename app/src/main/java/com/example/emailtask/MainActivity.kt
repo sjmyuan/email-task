@@ -28,9 +28,13 @@ class MainActivity : ComponentActivity() {
         }
 
         val eventGeneratorRequest =
-            PeriodicWorkRequestBuilder<EventGenerator>(1, TimeUnit.MINUTES).build()
+            PeriodicWorkRequestBuilder<EventGenerator>(5, TimeUnit.MINUTES).build()
 
-        WorkManager.getInstance(applicationContext).enqueue(eventGeneratorRequest)
+        val eventSenderRequest =
+            PeriodicWorkRequestBuilder<EventSender>(1, TimeUnit.MINUTES).build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueue(listOf(eventGeneratorRequest, eventSenderRequest))
 
         setContent {
             EmailTaskTheme {

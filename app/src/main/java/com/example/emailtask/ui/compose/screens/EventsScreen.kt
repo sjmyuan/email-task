@@ -43,6 +43,7 @@ fun EventsScreen(viewModel: App1ViewModel = viewModel()) {
 @Composable
 fun EventItem(event: Pair<String, Event>) {
     ListItem(
+        leadingContent = { Text(event.second.status.name) },
         overlineContent = { Text(event.first) },
         headlineContent = { Text(event.second.message) },
         supportingContent = { Text(event.second.receiverName) },

@@ -34,7 +34,7 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
     }
 
     @WorkerThread
-    suspend fun insertEvent(event: Event) {
-        eventDao.insertEvents(EventEntity.fromEvent(event))
+    suspend fun insertEvent(vararg events: Event) {
+        eventDao.insertEvents(*events.map { EventEntity.fromEvent(it) }.toTypedArray())
     }
 }

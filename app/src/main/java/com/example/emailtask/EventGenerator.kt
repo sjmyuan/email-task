@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import arrow.core.tail
 import com.example.emailtask.model.Event
 import com.example.emailtask.model.RecurrenceType
 import com.example.emailtask.model.Status
@@ -16,8 +17,10 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import java.lang.String.format
 
 class EventGenerator(
     context: Context,
@@ -29,33 +32,42 @@ class EventGenerator(
         val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
 
         return withContext(Dispatchers.IO) {
+
+            print("EventGenerator Running")
+
             scheduleRepository.allSchedules.collect { schedules ->
                 schedules.filter { it.receivers.isNotEmpty() }
                     .forEach {
                         val pendingEvents =
                             it.events.filter { event -> event.status == Status.PENDING }
                         val receiver = it.receivers.first()
-                        when (it.recurrence) {
-                            RecurrenceType.NOT_REPEAT -> {
-                                if (pendingEvents.isEmpty() && it.sentTime > now) {
-                                    val event = Event(
-                                        System.currentTimeMillis(),
-                                        it.id,
-                                        receiver.id,
-                                        receiver.name,
-                                        receiver.email,
-                                        receiver.mobile,
-                                        it.message,
-                                        it.sentTime,
-                                        Status.PENDING
-                                    )
-                                    scheduleRepository.insertEvent(event)
+                        if (pendingEvents.isEmpty()) {
+                            val nextEvent: Event? = when (it.recurrence) {
+                                RecurrenceType.NOT_REPEAT -> {
+                                    if (it.events.isEmpty()) {
+                                        Event(
+                                            System.currentTimeMillis(),
+                                            it.id,
+                                            receiver.id,
+                                            receiver.name,
+                                            receiver.email,
+                                            receiver.mobile,
+                                            it.message,
+                                            it.sentTime,
+                                            Status.PENDING
+                                        )
+                                    } else null
                                 }
-                            }
 
-                            RecurrenceType.DAILY -> {
-                                if (pendingEvents.none { event -> event.sentTime >= now }) {
-                                    val event = Event(
+                                RecurrenceType.DAILY -> {
+                                    print(
+                                        "Generating event for ${it.name}, sent time is ${
+                                            it.sentTime.format(
+                                                LocalDateTime.Formats.ISO
+                                            )
+                                        } "
+                                    )
+                                    Event(
                                         System.currentTimeMillis(),
                                         it.id,
                                         receiver.id,
@@ -70,15 +82,12 @@ class EventGenerator(
                                         ),
                                         Status.PENDING
                                     )
-                                    scheduleRepository.insertEvent(event)
                                 }
-                            }
 
-                            RecurrenceType.WEEKLY -> {
-                                if (pendingEvents.none { event -> event.sentTime >= now }) {
+                                RecurrenceType.WEEKLY -> {
                                     val offset =
                                         it.sentTime.dayOfWeek.ordinal - now.date.dayOfWeek.ordinal
-                                    val event = Event(
+                                    Event(
                                         System.currentTimeMillis(),
                                         it.id,
                                         receiver.id,
@@ -92,13 +101,10 @@ class EventGenerator(
                                         ),
                                         Status.PENDING
                                     )
-                                    scheduleRepository.insertEvent(event)
                                 }
-                            }
 
-                            RecurrenceType.MONTHLY -> {
-                                if (pendingEvents.none { event -> event.sentTime >= now }) {
-                                    val event = Event(
+                                RecurrenceType.MONTHLY -> {
+                                    Event(
                                         System.currentTimeMillis(),
                                         it.id,
                                         receiver.id,
@@ -111,13 +117,10 @@ class EventGenerator(
                                         ),
                                         Status.PENDING
                                     )
-                                    scheduleRepository.insertEvent(event)
                                 }
-                            }
 
-                            RecurrenceType.Annually -> {
-                                if (pendingEvents.none { event -> event.sentTime >= now }) {
-                                    val event = Event(
+                                RecurrenceType.Annually -> {
+                                    Event(
                                         System.currentTimeMillis(),
                                         it.id,
                                         receiver.id,
@@ -130,12 +133,9 @@ class EventGenerator(
                                         ),
                                         Status.PENDING
                                     )
-                                    scheduleRepository.insertEvent(event)
                                 }
-                            }
 
-                            RecurrenceType.WEEKDAY -> {
-                                if (pendingEvents.none { event -> event.sentTime >= now }) {
+                                RecurrenceType.WEEKDAY -> {
 
                                     val nextDate = when (now.date.dayOfWeek.ordinal) {
                                         4 -> {
@@ -151,7 +151,7 @@ class EventGenerator(
                                         }
                                     }
 
-                                    val event = Event(
+                                    Event(
                                         System.currentTimeMillis(),
                                         it.id,
                                         receiver.id,
@@ -164,9 +164,18 @@ class EventGenerator(
                                         ),
                                         Status.PENDING
                                     )
-                                    scheduleRepository.insertEvent(event)
 
                                 }
+                            }
+
+                            nextEvent?.let { event ->
+                                val shuffledReceivers = it.receivers.tail() + receiver
+                                scheduleRepository.insertSchedule(
+                                    it.copy(
+                                        receivers = shuffledReceivers,
+                                        events = it.events + event
+                                    )
+                                )
                             }
                         }
                     }

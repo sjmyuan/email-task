@@ -22,7 +22,8 @@ data class ScheduleEntity(
 @Entity(tableName = "schedule_contact_mapping", primaryKeys = ["scheduleId", "contactId"])
 data class ScheduleContactCrossRef(
     val scheduleId: Long,
-    val contactId: Long
+    val contactId: Long,
+    val receiverIndex: Int
 )
 
 data class ScheduleWithReceiversAndEvents(
@@ -38,12 +39,19 @@ data class ScheduleWithReceiversAndEvents(
         parentColumn = "scheduleId",
         entityColumn = "scheduleId"
     )
+    val receiverWithIndexes: List<ScheduleContactCrossRef>,
+
+    @Relation(
+        parentColumn = "scheduleId",
+        entityColumn = "scheduleId"
+    )
     val events: List<EventEntity>
 ) {
     fun toSchedule() = Schedule(
         schedule.scheduleId,
         schedule.name,
-        receivers.map { it.toContact() },
+        receivers.sortedBy { receiver -> receiverWithIndexes.find { it.contactId == receiver.contactId }?.receiverIndex }
+            .map { it.toContact() },
         events.map { it.toEvent() },
         LocalDateTime.parse(schedule.sentTime, LocalDateTime.Formats.ISO),
         RecurrenceType.entries[schedule.recurrence],
@@ -51,7 +59,7 @@ data class ScheduleWithReceiversAndEvents(
     )
 
     companion object {
-        fun fromSchedule(source: Schedule) =
+        private fun fromSchedule(source: Schedule) =
             ScheduleEntity(
                 source.id,
                 source.name,
@@ -64,6 +72,13 @@ data class ScheduleWithReceiversAndEvents(
             ScheduleWithReceiversAndEvents(
                 schedule = fromSchedule(source),
                 receivers = source.receivers.map { ContactEntity.fromContact(it) },
+                receiverWithIndexes = source.receivers.mapIndexed { index, element ->
+                    ScheduleContactCrossRef(
+                        source.id,
+                        element.id,
+                        index
+                    )
+                },
                 events = source.events.map { EventEntity.fromEvent(it) }
             )
     }

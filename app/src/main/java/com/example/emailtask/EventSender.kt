@@ -21,6 +21,7 @@ class EventSender(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        print("EventSender Running")
         return withContext(Dispatchers.IO) {
             val currentMoment: Instant = Clock.System.now()
             val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -35,13 +36,14 @@ class EventSender(
 
                     val processedEvents = pendingEvents.map { event ->
                         try {
-                            smsManager.sendTextMessage(
-                                event.receiverMobile,
-                                null,
-                                event.message,
-                                null,
-                                null
-                            )
+                            //smsManager.sendTextMessage(
+                            //    event.receiverMobile,
+                            //    null,
+                            //    event.message,
+                            //    null,
+                            //    null
+                            //)
+                            print("Sending event for ${schedule.name}")
                             event.copy(status = Status.SUCCESS)
                         } catch (e: Exception) {
                             event.copy(status = Status.FAILURE)

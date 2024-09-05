@@ -23,10 +23,9 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
         val entity = ScheduleWithReceiversAndEvents.fromSchedule1(schedule)
         scheduleDao.insertSchedules(entity.schedule)
         scheduleDao.deleteScheduleReceivers(scheduleId = entity.schedule.scheduleId)
-        scheduleDao.insertScheduleReceivers(*entity.receivers.map {
+        scheduleDao.insertScheduleReceivers(*entity.receivers.mapIndexed { index, it ->
             ScheduleContactCrossRef(
-                entity.schedule.scheduleId,
-                it.contactId
+                entity.schedule.scheduleId, it.contactId, index
             )
         }.toTypedArray())
         eventDao.deleteEventsByScheduleId(entity.schedule.scheduleId)

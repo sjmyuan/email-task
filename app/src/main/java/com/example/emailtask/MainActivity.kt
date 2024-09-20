@@ -1,43 +1,50 @@
 package com.example.emailtask
 
 import android.os.Bundle
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import com.example.emailtask.databinding.ActivityMainBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.App1ViewModelFactory
+import com.example.emailtask.ui.compose.BottomNavigation
+import com.example.emailtask.ui.compose.theme.EmailTaskTheme
+import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        val navView: BottomNavigationView = binding.navView
-
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_instructions,
-                R.id.navigation_contact_list,
-                R.id.navigation_schedule_list,
-                R.id.navigation_events
+        val appApplication = application as AppApplication
+        val app1ViewModel: App1ViewModel by viewModels {
+            App1ViewModelFactory(
+                appApplication.contactRepository,
+                appApplication.scheduleRepository
             )
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
+        }
 
-    }
+        val eventGeneratorRequest =
+            PeriodicWorkRequestBuilder<EventGenerator>(5, TimeUnit.MINUTES).build()
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        return navController.navigateUp() || super.onSupportNavigateUp()
+        val eventSenderRequest =
+            PeriodicWorkRequestBuilder<EventSender>(1, TimeUnit.MINUTES).build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueue(listOf(eventGeneratorRequest, eventSenderRequest))
+
+        setContent {
+            EmailTaskTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    BottomNavigation(app1ViewModel)
+                }
+            }
+        }
     }
 }

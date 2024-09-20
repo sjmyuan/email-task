@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -52,7 +53,13 @@ fun EventItem(event: Pair<String, Event>) {
     ListItem(
         leadingContent = { Text(event.second.status.name) },
         overlineContent = { Text(event.first) },
-        headlineContent = { Text(event.second.message) },
+        headlineContent = {
+            Text(
+                event.second.message,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
         supportingContent = { Text(event.second.receiverName) },
         trailingContent = { Text(event.second.sentTime.format(LocalDateTime.Formats.ISO)) }
     )

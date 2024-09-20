@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -92,7 +93,12 @@ fun ScheduleItem(schedule: Schedule, onClick: () -> Unit, onDelete: () -> Unit) 
                 onClick = onClick,
                 onLongClick = { showDropDownList = true }),
             overlineContent = { Text(schedule.name) },
-            headlineContent = { Text(schedule.message) },
+            headlineContent = {
+                Text(
+                    schedule.message, maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             supportingContent = { Text(schedule.recurrence.description) }
         )
         DropdownMenu(

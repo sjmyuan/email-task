@@ -32,6 +32,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -52,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
@@ -107,6 +109,8 @@ fun ScheduleDetailsScreen(
         )
     }
 
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,6 +156,7 @@ fun ScheduleDetailsScreen(
 
         Column(
             modifier = Modifier
+                .verticalScroll(scrollState)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
@@ -208,7 +213,7 @@ fun ScheduleDetailsScreen(
                 )
             }
 
-            Column {
+            Box {
                 OutlinedTextField(
                     editingSchedule?.recurrence?.description.orEmpty(),
                     {},
@@ -240,19 +245,40 @@ fun ScheduleDetailsScreen(
             Column(
                 modifier = Modifier
                     .padding(top = 24.dp)
-                    .border(1.dp, Color.Gray)
             ) {
-                LazyColumn {
-                    items(receivers) { item ->
-                        ListItem(
-                            modifier = Modifier.padding(8.dp),
-                            headlineContent = { Text(item.name) })
-                        HorizontalDivider(
-                            modifier = Modifier.padding(8.dp),
-                            color = Color.Gray,
-                            thickness = 1.dp
-                        )
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .weight(1f),
+                        thickness = 1.dp,
+                        color = Color.LightGray
+                    )
+                    Text(
+                        text = "Receivers",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        textAlign = TextAlign.Center,
+                        color = Color.LightGray
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .weight(1f),
+                        thickness = 1.dp,
+                        color = Color.LightGray
+                    )
+                }
+                receivers.forEach { item ->
+                    ListItem(
+                        modifier = Modifier.padding(8.dp),
+                        headlineContent = { Text(item.name) })
+                    HorizontalDivider(
+                        modifier = Modifier.padding(8.dp),
+                        color = Color.Gray,
+                        thickness = 1.dp
+                    )
                 }
                 OutlinedButton(
                     modifier = Modifier

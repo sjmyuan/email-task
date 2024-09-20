@@ -58,9 +58,22 @@ class App1ViewModel(
         }
     }
 
+    fun deleteContact(contact: Contact) {
+        viewModelScope.launch {
+            scheduleRepository.deleteContact(contact)
+            contactRepository.delete(contact)
+        }
+    }
+
     fun updateSchedule(schedule: Schedule) {
         viewModelScope.launch {
             scheduleRepository.insertSchedule(schedule)
+        }
+    }
+
+    fun deleteSchedule(schedule: Schedule) {
+        viewModelScope.launch {
+            scheduleRepository.deleteSchedule(schedule)
         }
     }
 

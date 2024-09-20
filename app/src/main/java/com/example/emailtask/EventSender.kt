@@ -2,7 +2,11 @@ package com.example.emailtask
 
 import android.content.Context
 import android.telephony.SmsManager
+import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.example.emailtask.model.Status
 import com.example.emailtask.repository.ScheduleRepository
@@ -21,39 +25,37 @@ class EventSender(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        print("EventSender Running")
         return withContext(Dispatchers.IO) {
             val currentMoment: Instant = Clock.System.now()
             val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
             val smsManager = SmsManager.getDefault()
 
-            scheduleRepository.allSchedules.collect { schedules ->
 
-                schedules.forEach { schedule ->
-                    val pendingEvents =
-                        schedule.events.filter { it.status == Status.PENDING && it.sentTime <= now }
-                            .sortedBy { it.sentTime }
+            scheduleRepository.getAllSchedulesWithoutFlow().forEach { schedule ->
+                val pendingEvents =
+                    schedule.events.filter { it.status == Status.PENDING && it.sentTime <= now }
+                        .sortedBy { it.sentTime }
 
-                    val processedEvents = pendingEvents.map { event ->
-                        try {
-                            //smsManager.sendTextMessage(
-                            //    event.receiverMobile,
-                            //    null,
-                            //    event.message,
-                            //    null,
-                            //    null
-                            //)
-                            print("Sending event for ${schedule.name}")
-                            event.copy(status = Status.SUCCESS)
-                        } catch (e: Exception) {
-                            event.copy(status = Status.FAILURE)
-                        }
+                val processedEvents = pendingEvents.map { event ->
+                    try {
+                        //smsManager.sendTextMessage(
+                        //    event.receiverMobile,
+                        //    null,
+                        //    event.message,
+                        //    null,
+                        //    null
+                        //)
+                        print("Sending event for ${schedule.name}")
+                        event.copy(status = Status.SUCCESS)
+                    } catch (e: Exception) {
+                        event.copy(status = Status.FAILURE)
                     }
-
-                    scheduleRepository.insertEvent(*processedEvents.toTypedArray())
                 }
 
+                scheduleRepository.insertEvent(*processedEvents.toTypedArray())
+
             }
+
             return@withContext Result.success()
         }
     }

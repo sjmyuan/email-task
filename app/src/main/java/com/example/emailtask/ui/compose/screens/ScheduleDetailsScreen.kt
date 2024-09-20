@@ -64,6 +64,7 @@ import com.example.emailtask.model.App1ViewModel
 import com.example.emailtask.model.Contact
 import com.example.emailtask.model.RecurrenceType
 import com.example.emailtask.ui.compose.LeafScreens
+import com.example.emailtask.ui.compose.utils.DividerWithLabel
 import com.example.emailtask.ui.compose.utils.ScheduleReceiversDialog
 import com.example.emailtask.ui.compose.utils.TimePickerDialog
 import kotlinx.datetime.Instant
@@ -246,30 +247,7 @@ fun ScheduleDetailsScreen(
                 modifier = Modifier
                     .padding(top = 24.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .weight(1f),
-                        thickness = 1.dp,
-                        color = Color.LightGray
-                    )
-                    Text(
-                        text = "Receivers",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        textAlign = TextAlign.Center,
-                        color = Color.LightGray
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .weight(1f),
-                        thickness = 1.dp,
-                        color = Color.LightGray
-                    )
-                }
+                DividerWithLabel(modifier = Modifier.padding(vertical = 8.dp), label = "Receivers")
                 receivers.forEach { item ->
                     ListItem(
                         modifier = Modifier.padding(8.dp),

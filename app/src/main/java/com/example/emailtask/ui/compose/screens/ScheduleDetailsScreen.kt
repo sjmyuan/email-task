@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -35,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -47,11 +50,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.emailtask.R
 import com.example.emailtask.model.App1ViewModel
 import com.example.emailtask.model.Contact
 import com.example.emailtask.model.RecurrenceType
@@ -107,19 +113,46 @@ fun ScheduleDetailsScreen(
             .border(1.dp, Color.Gray)
             .padding(4.dp),
     ) {
-        IconButton(
-            modifier = Modifier.align(Alignment.Start),
-            onClick = { navController.popBackStack() }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+
+            IconButton(
+                enabled = editingSchedule?.let {
+                    it.name.isNotBlank()
+                            && it.message.isNotBlank()
+                            && it.receivers.isNotEmpty()
+                } == true,
+                onClick = {
+                    editingSchedule?.let { schedule ->
+                        viewModel.updateSchedule(
+                            selectedDate?.let {
+                                schedule.copy(sentTime = LocalDateTime(it, selectedTime))
+                            } ?: schedule
+                        )
+                    }
+                    navController.popBackStack()
+                }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_check_24),
+                    contentDescription = "Save"
+                )
+            }
         }
 
         Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxSize(),
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -127,40 +160,53 @@ fun ScheduleDetailsScreen(
                 editingSchedule?.name.orEmpty(),
                 { name -> viewModel.setEditingSchedule(editingSchedule?.copy(name = name)) },
                 label = { Text(text = "Name") },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             )
             OutlinedTextField(
                 editingSchedule?.message.orEmpty(),
                 { message -> viewModel.setEditingSchedule(editingSchedule?.copy(message = message)) },
                 label = { Text(text = "Message") },
                 singleLine = false,
-                modifier = Modifier.padding(8.dp)
-            )
-            OutlinedTextField(
-                selectedDate?.format(LocalDate.Formats.ISO).orEmpty(),
-                { },
-                label = { Text(text = "Date") },
-                readOnly = true,
-                enabled = false,
                 modifier = Modifier
-                    .clickable(enabled = true) {
-                        showDatePicker = true
-                    }
+                    .fillMaxWidth()
                     .padding(8.dp)
             )
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                OutlinedTextField(
+                    selectedDate?.format(LocalDate.Formats.ISO).orEmpty(),
+                    { },
+                    label = { Text(text = "Date") },
+                    readOnly = true,
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .clickable(enabled = true) {
+                            showDatePicker = true
+                        }
+                )
 
-            OutlinedTextField(
-                selectedTime.format(LocalTime.Formats.ISO),
-                { },
-                label = { Text(text = "Time") },
-                readOnly = true,
-                enabled = false,
-                modifier = Modifier
-                    .clickable(enabled = true) {
-                        showTimePicker = true
-                    }
-                    .padding(8.dp)
-            )
+                OutlinedTextField(
+                    selectedTime.format(LocalTime.Formats.ISO),
+                    { },
+                    label = { Text(text = "Time") },
+                    readOnly = true,
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .clickable(enabled = true) {
+                            showTimePicker = true
+                        }
+                )
+            }
 
             Column {
                 OutlinedTextField(
@@ -170,6 +216,7 @@ fun ScheduleDetailsScreen(
                     readOnly = true,
                     enabled = false,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .clickable(enabled = true) {
                             showRecurrenceTypeList = !showRecurrenceTypeList
                         }
@@ -192,18 +239,25 @@ fun ScheduleDetailsScreen(
 
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .padding(top = 24.dp)
                     .border(1.dp, Color.Gray)
             ) {
                 LazyColumn {
                     items(receivers) { item ->
-                        ListItem(headlineContent = { Text(item.name) })
+                        ListItem(
+                            modifier = Modifier.padding(8.dp),
+                            headlineContent = { Text(item.name) })
+                        HorizontalDivider(
+                            modifier = Modifier.padding(8.dp),
+                            color = Color.Gray,
+                            thickness = 1.dp
+                        )
                     }
                 }
                 OutlinedButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp),
+                        .padding(8.dp),
                     onClick = {
                         showReceiversEditor = true
                     },
@@ -211,23 +265,6 @@ fun ScheduleDetailsScreen(
                     Icon(Icons.Filled.Edit, "Edit Schedule Receivers")
                 }
             }
-
-            Button(
-                enabled = editingSchedule?.let {
-                    it.name.isNotBlank()
-                            && it.message.isNotBlank()
-                            && it.receivers.isNotEmpty()
-                } == true,
-                onClick = {
-                    editingSchedule?.let { schedule ->
-                        viewModel.updateSchedule(
-                            selectedDate?.let {
-                                schedule.copy(sentTime = LocalDateTime(it, selectedTime))
-                            } ?: schedule
-                        )
-                    }
-                    navController.popBackStack()
-                }, content = { Text("Save") })
         }
 
     }

@@ -39,7 +39,7 @@ fun ScheduleReceiversDialog(
             shape = MaterialTheme.shapes.extraLarge,
             tonalElevation = 6.dp,
             modifier = Modifier
-                .width(IntrinsicSize.Min)
+                .width(IntrinsicSize.Max)
                 .height(IntrinsicSize.Min)
                 .background(
                     shape = MaterialTheme.shapes.extraLarge,

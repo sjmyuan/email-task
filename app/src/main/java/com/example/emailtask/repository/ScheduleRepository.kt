@@ -2,11 +2,14 @@ package com.example.emailtask.repository
 
 import androidx.annotation.WorkerThread
 import androidx.room.Transaction
+import com.example.emailtask.data.ContactEntity
 import com.example.emailtask.data.EventDao
 import com.example.emailtask.data.EventEntity
 import com.example.emailtask.data.ScheduleContactCrossRef
 import com.example.emailtask.data.ScheduleDao
+import com.example.emailtask.data.ScheduleEntity
 import com.example.emailtask.data.ScheduleWithReceiversAndEvents
+import com.example.emailtask.model.Contact
 import com.example.emailtask.model.Event
 import com.example.emailtask.model.Schedule
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +19,9 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
 
     val allSchedules: Flow<List<Schedule>> =
         scheduleDao.getAll().map { scheduleEntities -> scheduleEntities.map { it.toSchedule() } }
+
+    suspend fun getAllSchedulesWithoutFlow(): List<Schedule> =
+        scheduleDao.getAllWithoutFlow().map { it.toSchedule() }
 
     @WorkerThread
     @Transaction
@@ -33,7 +39,21 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao, private val event
     }
 
     @WorkerThread
+    @Transaction
+    suspend fun deleteSchedule(schedule: Schedule) {
+        val entity = ScheduleWithReceiversAndEvents.fromSchedule1(schedule)
+        scheduleDao.deleteScheduleReceivers(schedule.id)
+        scheduleDao.deleteSchedules(entity.schedule)
+    }
+
+    @WorkerThread
     suspend fun insertEvent(vararg events: Event) {
         eventDao.insertEvents(*events.map { EventEntity.fromEvent(it) }.toTypedArray())
     }
+
+    @WorkerThread
+    suspend fun deleteContact(contact: Contact) {
+        scheduleDao.deleteReceiverSchedules(contact.id)
+    }
+
 }

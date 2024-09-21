@@ -1,5 +1,8 @@
 package com.example.emailtask.ui.compose
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,16 +24,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.example.emailtask.AppApplication
-import com.example.emailtask.model.App1ViewModel
-import com.example.emailtask.model.App1ViewModelFactory
+import com.example.emailtask.model.AppViewModel
 import com.example.emailtask.ui.compose.screens.ContactDetailsScreen
 import com.example.emailtask.ui.compose.screens.ContactsScreen
 import com.example.emailtask.ui.compose.screens.EventsScreen
@@ -58,9 +59,10 @@ data class BottomNavigationItem(
     val route: String = ""
 )
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigation(viewModel: App1ViewModel) {
+fun BottomNavigation(viewModel: AppViewModel) {
     val navigationItems = listOf(
         BottomNavigationItem(
             label = "Instructions",
@@ -84,37 +86,41 @@ fun BottomNavigation(viewModel: App1ViewModel) {
         ),
     )
 
+    val screensWithoutBottomBar = listOf(LeafScreens.CONTACT_DETAILS, LeafScreens.SCHEDULE_DETAILS)
+
     val navController = rememberNavController()
-    var navigationSelectedItem by remember {
-        mutableIntStateOf(0)
-    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Log.d("Navigation", "Current route is $currentRoute")
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                navigationItems.forEachIndexed { index, navigationItem ->
-                    NavigationBarItem(
-                        selected = index == navigationSelectedItem,
-                        label = {
-                            Text(navigationItem.label)
-                        },
-                        icon = {
-                            Icon(
-                                navigationItem.icon,
-                                contentDescription = navigationItem.label
-                            )
-                        },
-                        onClick = {
-                            navigationSelectedItem = index
-                            navController.navigate(navigationItem.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (screensWithoutBottomBar.map { it.route }.none { it == currentRoute }) {
+                NavigationBar {
+                    navigationItems.forEachIndexed { _, navigationItem ->
+                        NavigationBarItem(
+                            selected = currentRoute == navigationItem.route,
+                            label = {
+                                Text(navigationItem.label)
+                            },
+                            icon = {
+                                Icon(
+                                    navigationItem.icon,
+                                    contentDescription = navigationItem.label
+                                )
+                            },
+                            onClick = {
+                                navController.navigate(navigationItem.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -127,11 +133,12 @@ fun BottomNavigation(viewModel: App1ViewModel) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     paddingValues: PaddingValues,
-    viewModel: App1ViewModel
+    viewModel: AppViewModel
 ) {
     NavHost(
         navController = navController, startDestination = RootScreens.INSTRUCTIONS.route,

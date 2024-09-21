@@ -1,37 +1,35 @@
 package com.example.emailtask.ui.compose.screens
 
-import androidx.compose.foundation.background
+import android.os.Build
+import android.view.HapticFeedbackConstants
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -40,22 +38,24 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.R
+import com.example.emailtask.model.AppViewModel
 import com.example.emailtask.model.Contact
 import com.example.emailtask.model.RecurrenceType
-import com.example.emailtask.ui.compose.LeafScreens
+import com.example.emailtask.ui.compose.utils.DividerWithLabel
 import com.example.emailtask.ui.compose.utils.ScheduleReceiversDialog
 import com.example.emailtask.ui.compose.utils.TimePickerDialog
 import kotlinx.datetime.Instant
@@ -66,12 +66,14 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import sh.calvin.reorderable.ReorderableColumn
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleDetailsScreen(
     navController: NavHostController,
-    viewModel: App1ViewModel = viewModel()
+    viewModel: AppViewModel = viewModel()
 ) {
     val editingSchedule by viewModel.editingSchedule.collectAsState()
     val contacts by viewModel.contacts.collectAsState()
@@ -101,25 +103,56 @@ fun ScheduleDetailsScreen(
         )
     }
 
+    val scrollState = rememberScrollState()
+    val view = LocalView.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .border(1.dp, Color.Gray)
             .padding(4.dp),
     ) {
-        IconButton(
-            modifier = Modifier.align(Alignment.Start),
-            onClick = { navController.popBackStack() }) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+
+            IconButton(
+                enabled = editingSchedule?.let {
+                    it.name.isNotBlank()
+                            && it.message.isNotBlank()
+                            && it.receivers.isNotEmpty()
+                } == true,
+                onClick = {
+                    editingSchedule?.let { schedule ->
+                        viewModel.updateSchedule(
+                            selectedDate?.let {
+                                schedule.copy(sentTime = LocalDateTime(it, selectedTime))
+                            } ?: schedule
+                        )
+                    }
+                    navController.popBackStack()
+                }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_check_24),
+                    contentDescription = "Save"
+                )
+            }
         }
 
         Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxSize(),
+                .verticalScroll(scrollState)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -127,42 +160,55 @@ fun ScheduleDetailsScreen(
                 editingSchedule?.name.orEmpty(),
                 { name -> viewModel.setEditingSchedule(editingSchedule?.copy(name = name)) },
                 label = { Text(text = "Name") },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             )
             OutlinedTextField(
                 editingSchedule?.message.orEmpty(),
                 { message -> viewModel.setEditingSchedule(editingSchedule?.copy(message = message)) },
                 label = { Text(text = "Message") },
                 singleLine = false,
-                modifier = Modifier.padding(8.dp)
-            )
-            OutlinedTextField(
-                selectedDate?.format(LocalDate.Formats.ISO).orEmpty(),
-                { },
-                label = { Text(text = "Date") },
-                readOnly = true,
-                enabled = false,
                 modifier = Modifier
-                    .clickable(enabled = true) {
-                        showDatePicker = true
-                    }
+                    .fillMaxWidth()
                     .padding(8.dp)
             )
-
-            OutlinedTextField(
-                selectedTime.format(LocalTime.Formats.ISO),
-                { },
-                label = { Text(text = "Time") },
-                readOnly = true,
-                enabled = false,
+            Row(
                 modifier = Modifier
-                    .clickable(enabled = true) {
-                        showTimePicker = true
-                    }
                     .padding(8.dp)
-            )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                OutlinedTextField(
+                    selectedDate?.format(LocalDate.Formats.ISO).orEmpty(),
+                    { },
+                    label = { Text(text = "Date") },
+                    readOnly = true,
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .clickable(enabled = true) {
+                            showDatePicker = true
+                        }
+                )
 
-            Column {
+                OutlinedTextField(
+                    selectedTime.format(LocalTime.Formats.ISO),
+                    { },
+                    label = { Text(text = "Time") },
+                    readOnly = true,
+                    enabled = false,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .clickable(enabled = true) {
+                            showTimePicker = true
+                        }
+                )
+            }
+
+            Box {
                 OutlinedTextField(
                     editingSchedule?.recurrence?.description.orEmpty(),
                     {},
@@ -170,6 +216,7 @@ fun ScheduleDetailsScreen(
                     readOnly = true,
                     enabled = false,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .clickable(enabled = true) {
                             showRecurrenceTypeList = !showRecurrenceTypeList
                         }
@@ -190,44 +237,69 @@ fun ScheduleDetailsScreen(
                 }
             }
 
+
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Gray)
+                    .padding(top = 24.dp)
             ) {
-                LazyColumn {
-                    items(receivers) { item ->
-                        ListItem(headlineContent = { Text(item.name) })
+                DividerWithLabel(modifier = Modifier.padding(vertical = 8.dp), label = "Receivers")
+                ReorderableColumn(
+                    list = receivers,
+                    onSettle = { fromIndex, toIndex ->
+                        receivers =
+                            receivers.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+                        viewModel.setEditingSchedule(
+                            editingSchedule
+                                ?.copy(receivers = receivers)
+                        )
+                    },
+                    onMove = {
+                        view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+                    }
+                ) { _, item, isDragging ->
+                    key(item.id) {
+                        val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
+
+                        Surface(shadowElevation = elevation) {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(text = item.name, Modifier.padding(horizontal = 8.dp))
+                                IconButton(
+                                    modifier = Modifier.draggableHandle(
+                                        onDragStarted = {
+                                            view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+                                        },
+                                        onDragStopped = {
+                                            view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+                                        },
+                                    ),
+                                    onClick = {},
+                                ) {
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(id = R.drawable.baseline_drag_handle_24),
+                                        contentDescription = "Reorder"
+                                    )
+
+                                }
+                            }
+                        }
                     }
                 }
                 OutlinedButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp),
+                        .padding(8.dp),
                     onClick = {
                         showReceiversEditor = true
                     },
                 ) {
-                    Icon(Icons.Filled.Edit, "Edit Schedule Receivers")
+                    Text("Edit Receivers")
                 }
             }
-
-            Button(
-                enabled = editingSchedule?.let {
-                    it.name.isNotBlank()
-                            && it.message.isNotBlank()
-                            && it.receivers.isNotEmpty()
-                } == true,
-                onClick = {
-                    editingSchedule?.let { schedule ->
-                        viewModel.updateSchedule(
-                            selectedDate?.let {
-                                schedule.copy(sentTime = LocalDateTime(it, selectedTime))
-                            } ?: schedule
-                        )
-                    }
-                    navController.popBackStack()
-                }, content = { Text("Save") })
         }
 
     }

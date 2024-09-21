@@ -23,10 +23,17 @@ interface ScheduleDao {
     @Query("DELETE FROM schedule_contact_mapping where scheduleId = :scheduleId")
     suspend fun deleteScheduleReceivers(scheduleId: Long)
 
+    @Query("DELETE FROM schedule_contact_mapping where contactId = :contactId")
+    suspend fun deleteReceiverSchedules(contactId: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertScheduleReceivers(vararg receivers: ScheduleContactCrossRef)
 
     @Transaction
     @Query("SELECT * FROM schedule")
     fun getAll(): Flow<List<ScheduleWithReceiversAndEvents>>
+
+    @Transaction
+    @Query("SELECT * FROM schedule")
+    suspend fun getAllWithoutFlow(): List<ScheduleWithReceiversAndEvents>
 }

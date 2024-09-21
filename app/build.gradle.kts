@@ -70,4 +70,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     kapt(libs.androidx.room.room.compiler2)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("sh.calvin.reorderable:reorderable:2.3.3")
 }

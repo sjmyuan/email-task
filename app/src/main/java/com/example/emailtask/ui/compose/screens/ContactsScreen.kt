@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -39,7 +40,7 @@ fun ContactsScreen(navController: NavHostController, viewModel: App1ViewModel = 
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
             items(contacts) { item ->
-                ContactItem(name = item.name,
+                ContactItem(item,
                     onEdit = {
                         viewModel.setEditingContact(item)
                         navController.navigate(LeafScreens.CONTACT_DETAILS.route)
@@ -70,14 +71,21 @@ fun ContactsScreen(navController: NavHostController, viewModel: App1ViewModel = 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ContactItem(name: String, onEdit: () -> Unit, onDelete: () -> Unit) {
+fun ContactItem(contact: Contact, onEdit: () -> Unit, onDelete: () -> Unit) {
     var showDropDownList by remember { mutableStateOf(false) }
     Box() {
         ListItem(
             modifier = Modifier.combinedClickable(
                 onClick = onEdit,
                 onLongClick = { showDropDownList = true }),
-            headlineContent = { Text(name) },
+            headlineContent = {
+                Text(
+                    contact.name, maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            supportingContent = { Text(contact.email) },
+            trailingContent = { Text(contact.mobile) }
         )
         DropdownMenu(
             modifier = Modifier.align(Alignment.Center),

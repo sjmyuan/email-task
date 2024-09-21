@@ -1,5 +1,9 @@
 package com.example.emailtask.ui.compose.screens
 
+import android.os.Build
+import android.view.HapticFeedbackConstants
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -35,6 +40,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -44,6 +50,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,7 +83,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import sh.calvin.reorderable.ReorderableColumn
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleDetailsScreen(
@@ -111,6 +121,7 @@ fun ScheduleDetailsScreen(
     }
 
     val scrollState = rememberScrollState()
+    val view = LocalView.current
 
     Column(
         modifier = Modifier
@@ -243,20 +254,57 @@ fun ScheduleDetailsScreen(
                 }
             }
 
+
             Column(
                 modifier = Modifier
                     .padding(top = 24.dp)
             ) {
                 DividerWithLabel(modifier = Modifier.padding(vertical = 8.dp), label = "Receivers")
-                receivers.forEach { item ->
-                    ListItem(
-                        modifier = Modifier.padding(8.dp),
-                        headlineContent = { Text(item.name) })
-                    HorizontalDivider(
-                        modifier = Modifier.padding(8.dp),
-                        color = Color.Gray,
-                        thickness = 1.dp
-                    )
+                ReorderableColumn(
+                    list = receivers,
+                    onSettle = { fromIndex, toIndex ->
+                        receivers =
+                            receivers.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+                        viewModel.setEditingSchedule(
+                            editingSchedule
+                                ?.copy(receivers = receivers)
+                        )
+                    },
+                    onMove = {
+                        view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK)
+                    }
+                ) { _, item, isDragging ->
+                    key(item.id) {
+                        val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
+
+                        Surface(shadowElevation = elevation) {
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Text(text = item.name, Modifier.padding(horizontal = 8.dp))
+                                IconButton(
+                                    modifier = Modifier.draggableHandle(
+                                        onDragStarted = {
+                                            view.performHapticFeedback(HapticFeedbackConstants.DRAG_START)
+                                        },
+                                        onDragStopped = {
+                                            view.performHapticFeedback(HapticFeedbackConstants.GESTURE_END)
+                                        },
+                                    ),
+                                    onClick = {},
+                                ) {
+                                    Icon(
+                                        imageVector = ImageVector.vectorResource(id = R.drawable.baseline_drag_handle_24),
+                                        contentDescription = "Reorder"
+                                    )
+
+                                }
+                            }
+                        }
+                    }
                 }
                 OutlinedButton(
                     modifier = Modifier
@@ -266,7 +314,7 @@ fun ScheduleDetailsScreen(
                         showReceiversEditor = true
                     },
                 ) {
-                    Icon(Icons.Filled.Edit, "Edit Schedule Receivers")
+                    Text("Edit Receivers")
                 }
             }
         }

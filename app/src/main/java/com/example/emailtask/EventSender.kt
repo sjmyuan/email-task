@@ -28,7 +28,7 @@ class EventSender(
         return withContext(Dispatchers.IO) {
             val currentMoment: Instant = Clock.System.now()
             val now: LocalDateTime = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault())
-            val smsManager = SmsManager.getDefault()
+            val smsManager = context.getSystemService(SmsManager::class.java)
 
 
             scheduleRepository.getAllSchedulesWithoutFlow().forEach { schedule ->
@@ -38,16 +38,20 @@ class EventSender(
 
                 val processedEvents = pendingEvents.map { event ->
                     try {
-                        //smsManager.sendTextMessage(
-                        //    event.receiverMobile,
-                        //    null,
-                        //    event.message,
-                        //    null,
-                        //    null
-                        //)
-                        print("Sending event for ${schedule.name}")
+                        smsManager.sendTextMessage(
+                            event.receiverMobile,
+                            null,
+                            event.message,
+                            null,
+                            null
+                        )
+                        Log.d("EVENT SENDER", "Sending SMS for ${schedule.name}")
                         event.copy(status = Status.SUCCESS)
                     } catch (e: Exception) {
+                        Log.d(
+                            "EVENT SENDER",
+                            "There is error when sending SMS for ${schedule.name}, ${e.message}"
+                        )
                         event.copy(status = Status.FAILURE)
                     }
                 }

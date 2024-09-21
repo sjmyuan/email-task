@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -24,10 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.emailtask.R
-import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.AppViewModel
 
 @Composable
-fun ContactDetailsScreen(navController: NavHostController, viewModel: App1ViewModel = viewModel()) {
+fun ContactDetailsScreen(navController: NavHostController, viewModel: AppViewModel = viewModel()) {
     val editingContact by viewModel.editingContact.collectAsState()
     Column(
         modifier = Modifier

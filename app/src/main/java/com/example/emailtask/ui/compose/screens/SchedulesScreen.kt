@@ -1,7 +1,6 @@
 package com.example.emailtask.ui.compose.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.AppViewModel
 import com.example.emailtask.model.RecurrenceType
 import com.example.emailtask.model.Schedule
 import com.example.emailtask.ui.compose.LeafScreens
@@ -40,7 +39,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
-fun SchedulesScreen(navController: NavHostController, viewModel: App1ViewModel = viewModel()) {
+fun SchedulesScreen(navController: NavHostController, viewModel: AppViewModel = viewModel()) {
     val schedules by viewModel.schedules.collectAsState()
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {

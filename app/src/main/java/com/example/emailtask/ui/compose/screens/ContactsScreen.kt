@@ -30,12 +30,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.emailtask.model.App1ViewModel
+import com.example.emailtask.model.AppViewModel
 import com.example.emailtask.model.Contact
 import com.example.emailtask.ui.compose.LeafScreens
 
 @Composable
-fun ContactsScreen(navController: NavHostController, viewModel: App1ViewModel = viewModel()) {
+fun ContactsScreen(navController: NavHostController, viewModel: AppViewModel = viewModel()) {
     val contacts by viewModel.contacts.collectAsState()
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {

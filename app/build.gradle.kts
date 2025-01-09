@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -42,6 +44,11 @@ android {
         viewBinding = true
         compose = true
     }
+
+    packaging {
+        resources.pickFirsts.add("META-INF/NOTICE.md")
+        resources.pickFirsts.add("META-INF/LICENSE.md")
+    }
 }
 
 dependencies {
@@ -71,4 +78,7 @@ dependencies {
     kapt(libs.androidx.room.room.compiler2)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("sh.calvin.reorderable:reorderable:2.3.3")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation ("com.sun.mail:android-mail:1.6.7")
+    implementation ("com.sun.mail:android-activation:1.6.7")
 }

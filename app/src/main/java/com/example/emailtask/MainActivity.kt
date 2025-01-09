@@ -1,5 +1,6 @@
 package com.example.emailtask
 
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.example.emailtask.model.AppViewModel
 import com.example.emailtask.model.App1ViewModelFactory
 import com.example.emailtask.ui.compose.BottomNavigation
@@ -23,7 +27,9 @@ class MainActivity : ComponentActivity() {
         val appApplication = application as AppApplication
         val appViewModel: AppViewModel by viewModels {
             App1ViewModelFactory(
-                appApplication.contactRepository, appApplication.scheduleRepository
+                appApplication.contactRepository,
+                appApplication.scheduleRepository,
+                appApplication.settingRepository
             )
         }
 

@@ -19,9 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -36,6 +33,7 @@ import com.example.emailtask.ui.compose.screens.ContactDetailsScreen
 import com.example.emailtask.ui.compose.screens.ContactsScreen
 import com.example.emailtask.ui.compose.screens.EventsScreen
 import com.example.emailtask.ui.compose.screens.InstructionsScreen
+import com.example.emailtask.ui.compose.screens.SMTPConfigScreen
 import com.example.emailtask.ui.compose.screens.ScheduleDetailsScreen
 import com.example.emailtask.ui.compose.screens.SchedulesScreen
 
@@ -50,7 +48,9 @@ enum class LeafScreens(val route: String) {
     CONTACTS("contacts"),
     CONTACT_DETAILS("contact_details"),
     SCHEDULES("schedules"),
-    SCHEDULE_DETAILS("schedule_details")
+    SCHEDULE_DETAILS("schedule_details"),
+    INSTRUCTIONS("instructions"),
+    SETTINGS("settings")
 }
 
 data class BottomNavigationItem(
@@ -144,8 +144,16 @@ fun AppNavigation(
         navController = navController, startDestination = RootScreens.INSTRUCTIONS.route,
         modifier = Modifier.padding(paddingValues = paddingValues)
     ) {
-        composable(RootScreens.INSTRUCTIONS.route) {
-            InstructionsScreen()
+        navigation(
+            route = RootScreens.INSTRUCTIONS.route,
+            startDestination = LeafScreens.INSTRUCTIONS.route
+        ) {
+            composable(route = LeafScreens.INSTRUCTIONS.route) {
+                InstructionsScreen(navController, viewModel)
+            }
+            composable(route = LeafScreens.SETTINGS.route) {
+                SMTPConfigScreen(navController, viewModel)
+            }
         }
         navigation(
             route = RootScreens.CONTACTS.route,
